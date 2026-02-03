@@ -28,10 +28,7 @@ Find the remainder of a division without using the `%` operator.
 * **Logic:** While `numerator` is greater than or equal to `denominator`, keep subtracting `denominator` from `numerator`.
 * **Return:** The final value of `numerator` (which is the remainder).
 
-### Exercise 5: `reverse_integer(n)`
-Reverse the digits of a number mathematically (e.g., 123 -> 321).
-* **Logic:** While `n > 0`:
-    1. Get the last digit (`n % 10`).
-    2. Add it to a `reversed` variable (remember to multiply `reversed` by 10 first to shift digits left).
-    3. Remove the last digit from `n` (`n // 10`).
-* **Return:** The reversed number.
+### Exercise 5: `next_power_of_two(limit)`
+Find the first power of 2 (1, 2, 4, 8, 16...) that is strictly greater than the `limit`.
+* **Logic:** Start with a variable at 1. While that variable is less than or equal to `limit`, multiply it by 2.
+* **Return:** The final number.
