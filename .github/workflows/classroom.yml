@@ -1,0 +1,93 @@
+name: Autograding Tests
+'on':
+  - push
+  - repository_dispatch
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.8
+
+    # HERE IS THE MAGIC: We run Python directly in the YAML
+    - name: Run Tests
+      id: run-autotest
+      shell: python
+      run: |
+        import sys
+        
+        # Try to import the student code. Catch syntax errors.
+        try:
+            import PE8exercises
+        except ImportError:
+            print("CRITICAL: Could not import PE8exercises.py. Check the filename.")
+            sys.exit(1)
+        except SyntaxError:
+            print("CRITICAL: Your code has a Syntax Error. Check for missing colons or parentheses.")
+            sys.exit(1)
+
+        # Helper function to check answers
+        passed_count = 0
+        total_count = 0
+
+        def check(name, expected, actual):
+            global passed_count, total_count
+            total_count += 1
+            print(f"--- {name} ---")
+            print(f"Expected: {expected}")
+            print(f"Actual:   {actual}")
+            if expected == actual:
+                print("Result:   ✅ PASS\n")
+                passed_count += 1
+                return True
+            else:
+                print("Result:   ❌ FAIL\n")
+                return False
+
+        print("\n========================= STARTING TESTS =========================\n")
+        
+        try:
+            # Ex 1: count_digits
+            check("Ex 1: count_digits(9876)", 4, PE8exercises.count_digits(9876))
+            
+            # Ex 2: collatz_steps
+            check("Ex 2: collatz_steps(6)", 8, PE8exercises.collatz_steps(6))
+            
+            # Ex 3: sum_until_threshold
+            check("Ex 3: sum_until_threshold(10)", 5, PE8exercises.sum_until_threshold(10))
+            
+            # Ex 4: manual_remainder
+            check("Ex 4: manual_remainder(25, 7)", 4, PE8exercises.manual_remainder(25, 7))
+            
+            # Ex 5: next_power_of_two
+            check("Ex 5: next_power_of_two(10)", 16, PE8exercises.next_power_of_two(10))
+
+        except Exception as e:
+            print(f"CRITICAL ERROR during execution: {e}")
+            sys.exit(1)
+
+        print("==================================================================")
+        print(f"Final Score: {passed_count}/{total_count}")
+
+        # If any test failed, exit with code 1 to fail the Action
+        if passed_count != total_count:
+            sys.exit(1)
+
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        RUN_AUTOTEST_RESULTS: "${{ job.status }}"
+      with:
+        runners: run-autotest
